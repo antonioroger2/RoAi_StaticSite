@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <title>Mono-Vision Guided Self-Balancing Robot Navigation</title>
+    <script>
+        MathJax.Hub.Config({
+            tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        });
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white">
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-3xl font-bold mb-2">Two-Wheeled Self-Balancing Bot for Metropolitan patrolling</h1>
+            <p class="text-xl">Leveraging Monocular Vision for Path Planning and PID Control</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-blue-800 text-white sticky top-0 z-10 shadow-md">
+        <div class="container mx-auto px-4">
+            <ul class="flex space-x-6 overflow-x-auto py-4">
+                <li><a href="#abstract" class="hover:text-blue-200">Abstract</a></li>
+                <li><a href="#introduction" class="hover:text-blue-200">Introduction</a></li>
+                <li><a href="#system" class="hover:text-blue-200">System Architecture</a></li>
+                <li><a href="#balance" class="hover:text-blue-200">Balance Control</a></li>
+                <li><a href="#vision" class="hover:text-blue-200">Mono-Vision</a></li>
+                <li><a href="#results" class="hover:text-blue-200">Results</a></li>
+                <li><a href="#conclusion" class="hover:text-blue-200">Conclusion</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="mb-16 bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+            <div class="grid md:grid-cols-2">
+              <!-- Text content -->
+              <div class="p-8 flex flex-col justify-center space-y-6">
+                <div>
+                  <h2 class="text-3xl font-extrabold text-gray-800 mb-2">
+                    Self-Balancing Robot with Mono-Vision Navigation
+                  </h2>
+                  <p class="text-gray-600 text-lg leading-relaxed">
+                    This project focuses on the development of a dynamically balanced two-wheeled mobile robot that integrates monocular depth estimation to achieve autonomous path planning and navigation. Unlike conventional robots that rely on multiple expensive sensors such as LIDAR and stereo cameras, our system leverages the simplicity and affordability of a single monocular camera to extract depth information.
+                  </p>
+                  <p class="text-gray-600 text-lg leading-relaxed mt-2">
+                    By incorporating advanced techniques in computer vision and machine learning, the robot is capable of understanding its surroundings, enabling efficient navigation and obstacle avoidance in complex metropolitan environments. This cost-effective design offers a scalable solution for urban surveillance and autonomous applications.
+                  </p>
+                </div>
+          
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-3">
+                  <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">Self-balancing robot</span>
+                  <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">Deep learning</span>
+                  <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">Computer vision</span>
+                  <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">PID control</span>
+                  <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">Path planning</span>
+                </div>
+              </div>
+          
+              <!-- Image -->
+              <div class="relative">
+                <img src="Intro.png" alt="Self-balancing robot with camera" class="w-full h-full object-cover">
+                <div class="absolute top-0 left-0 w-full h-full"></div>
+              </div>
+            </div>
+          </section>
+          
+        <!-- Abstract -->
+        <section id="abstract" class="mb-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Abstract</h2>
+            <div class="prose max-w-none">
+                <p>
+                    This project presents a novel approach to autonomous navigation for a self-balancing robot using monocular depth estimation from a deep learning model (Depth Anything). We combine a PID controller for dynamically stabilizing a two-wheeled robot with vision-based path planning. The proposed system employs an ESP32-CAM for image acquisition, processes depth maps from a single camera view, and constructs navigable paths through A* algorithm on an occupancy grid. The self-balancing mechanism utilizes an MPU6050 inertial measurement unit with a Kalman filter for reliable orientation estimation. Experimental results demonstrate that our system achieves stable navigation through complex environments with only a single camera, representing a cost-effective alternative to traditional sensor suites. We evaluate the system performance in terms of path planning accuracy, waypoint following capability, and balance stability under variable navigation conditions.
+                </p>
+            </div>
+        </section>
+
+        <!-- Introduction -->
+        <section id="introduction" class="mb-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Introduction</h2>
+            <div class="prose max-w-none">
+                <p>
+                    Self-balancing robots represent an interesting control problem that models inverted pendulum dynamics. Traditional approaches to robot navigation typically involve multiple sensors, including stereo cameras, LiDAR, or RGB-D sensors, which add significant cost and complexity to robotic systems. Recent advances in deep learning have enabled accurate depth estimation from monocular images, opening new possibilities for low-cost robotic navigation systems.
+                </p>
+                <p class="mt-4">
+                    Our approach leverages the "Depth Anything" model, a state-of-the-art monocular depth estimation network, to generate depth maps from a single ESP32-CAM module. These depth maps are processed to create occupancy grids for path planning using the A* algorithm. The robot executes the planned path while maintaining balance through a PID control system with Kalman filter-based sensor fusion.
+                </p>
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold">Key Contributions:</h3>
+                    <ul class="list-disc list-inside mt-2">
+                        <li>An integrated system architecture combining monocular depth estimation with a self-balancing robot platform</li>
+                        <li>An efficient implementation of depth map processing and path planning algorithms suitable for resource-constrained systems</li>
+                        <li>A robust PID control mechanism with Kalman filtering for stable robot balance during navigation</li>
+                        <li>Quantitative evaluation of navigation performance using monocular depth estimation compared to traditional approaches</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Architecture -->
+        <section id="system" class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">System Architecture</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Hardware Components -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4">Hardware Components</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Arduino Mega/compatible microcontroller for robot control</li>
+                        <li>MPU6050 accelerometer/gyroscope module for orientation sensing</li>
+                        <li>L298N motor driver controlling two DC motors with wheels</li>
+                        <li>ESP32-CAM module for image acquisition</li>
+                        <li>Computing device (laptop/desktop) for running the Depth Anything model</li>
+                    </ul>
+                    
+                    <div class="mt-6">
+                        <img src="hardware.png" alt="Hardware components" class="w-full rounded-lg">
+                        <p class="text-sm text-gray-600 mt-2">Hardware components of the self-balancing robot system</p>
+                    </div>
+                </div>
+                
+                <!-- Software Components -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4">Software Components</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Arduino firmware implementing PID control, Kalman filtering, and waypoint navigation</li>
+                        <li>Python script for image acquisition from ESP32-CAM</li>
+                        <li>Depth Anything model for monocular depth estimation</li>
+                        <li>Point cloud processing and A* path planning algorithms</li>
+                        <li>Communication protocols for waypoint transmission</li>
+                    </ul>
+                    
+                    <div class="mt-6">
+                        <img src="pid.png" alt="System architecture diagram" class="w-full rounded-lg">
+                        <p class="text-sm text-gray-600 mt-2">Control architecture diagram showing component interactions</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Balance Control System -->
+        <section id="balance" class="mb-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Self-Balancing Robot Control</h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-3">Balance Control System</h3>
+                <p class="mb-4">
+                    The self-balancing robot uses an inverted pendulum model controlled by a PID controller. The system state is estimated using readings from the MPU6050 sensor processed through a Kalman filter for improved noise rejection.
+                </p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <h4 class="font-bold mb-2">PID Controller Parameters:</h4>
+                    <div>
+                        \begin{align}
+                        K_p &= 15.0 \\
+                        K_i &= 120.0 \\
+                        K_d &= 0.6
+                        \end{align}
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">
+                        These values were selected to provide stable balance with reduced oscillation. A speed reduction factor of 0.8 was applied to all motor outputs to ensure smooth movement.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-3">Sensor Fusion with Kalman Filter</h3>
+                <p class="mb-4">
+                    We implement a Kalman filter to combine accelerometer and gyroscope data for accurate orientation estimation. The filter parameters are:
+                </p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <div>
+                        \begin{align}
+                        Q_{angle} &= 0.001 \quad \text{(Process noise variance for accelerometer)} \\
+                        Q_{bias} &= 0.004 \quad \text{(Process noise variance for gyro bias)} \\
+                        R_{measure} &= 0.03 \quad \text{(Measurement noise variance)}
+                        \end{align}
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h4 class="font-bold mb-2">Kalman Filter Algorithm:</h4>
+                    <div class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto">
+                        <pre class="text-sm">
+1. Convert time step to seconds: dt = timeStepMillis/1000
+2. Prediction step:
+   - Predict angle: kalmanState = kalmanState + dt × kalmanInput
+   - Predict uncertainty: kalmanUncertainty = kalmanUncertainty + (dt × gyroUncertainty)²
+3. Update step:
+   - Calculate Kalman gain: kalmanGain = kalmanUncertainty/(kalmanUncertainty + accelUncertainty²)
+   - Update angle estimate: kalmanState = kalmanState + kalmanGain × (kalmanMeasurement - kalmanState)
+   - Update uncertainty: kalmanUncertainty = (1 - kalmanGain) × kalmanUncertainty
+4. Return updated kalmanState and kalmanUncertainty
+                        </pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold mb-3">Waypoint Navigation</h3>
+                <p class="mb-4">
+                    The robot's waypoint navigation system processes a sequence of (x, y) coordinate pairs received via serial communication.
+                </p>
+                
+                <ol class="list-decimal list-inside space-y-1 mb-4">
+                    <li>Calculates distance and angle to the target waypoint</li>
+                    <li>Adjusts motor speeds to turn toward the waypoint while maintaining balance</li>
+                    <li>Updates position estimate based on motor speed and heading</li>
+                    <li>Detects waypoint arrival when within a specified radius</li>
+                </ol>
+                
+                <p>
+                    The turning control is implemented using a proportional controller with gain K<sub>turn</sub> = 0.5, with maximum turning adjustment limited to 20 units to prevent excessive tilting during navigation.
+                </p>
+            </div>
+        </section>
+
+        <!-- Mono-Vision Path Planning -->
+        <section id="vision" class="mb-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Mono-Vision Path Planning</h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-3">Depth Map Generation</h3>
+                <p class="mb-4">
+                    We utilize the Depth Anything model, specifically the variant with a Vision Transformer (ViT) backbone, to generate depth maps from single RGB images. The model architecture follows the Dense Prediction Transformer (DPT) approach adapted for depth estimation.
+                </p>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <img src="camera.png" alt="RGB image" class="w-full rounded-lg">
+                    <img src="depth.png" alt="Depth map" class="w-full rounded-lg">
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Comparison of original RGB image (left) and generated depth map (right)</p>
+                
+                <h4 class="font-bold mb-2">Image Processing Pipeline:</h4>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li>Resize to 518×518 pixels while maintaining aspect ratio</li>
+                    <li>Normalize with ImageNet mean and standard deviation</li>
+                    <li>Process through the Depth Anything model</li>
+                    <li>Interpolate results back to original image dimensions</li>
+                    <li>Normalize and invert depth map for visualization</li>
+                </ol>
+            </div>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-bold mb-3">Point Cloud Generation</h3>
+                <p class="mb-4">
+                    The depth map is converted to a 3D point cloud using the following mapping:
+                </p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <div>
+                        \begin{align}
+                        x &= u - width/2 \\
+                        y &= v \\
+                        z &= depth\_map(u,v) \times 100.0
+                        \end{align}
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">
+                        where $(u,v)$ are pixel coordinates, and $depth\_map(u,v)$ is the normalized depth value at that pixel.
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="flex justify-center">
+                        <img src="point_cloud.png" alt="Point cloud visualization" class="w-[25rem] h-[25rem] object-cover rounded-lg">
+                    </div>                    
+                    <p class="text-sm text-gray-600 mt-2">Point cloud visualization generated from depth map</p>
+                </div>
+                
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold mb-3">Occupancy Grid and Path Planning</h3>
+                <p class="mb-4">
+                    From the point cloud, we construct an occupancy grid representing navigable terrain:
+                </p>
+                
+                <ol class="list-decimal list-inside space-y-1 mb-4">
+                    <li>Filter points near the floor plane (at $y = y_{floor}$)</li>
+                    <li>Create a 2D occupancy grid where obstacles = 1, free space = 0</li>
+                    <li>Remove margins to ensure robot clearance</li>
+                    <li>Apply A* algorithm to find a path from starting position to farthest navigable point</li>
+                </ol>
+                
+                <p class="mb-4">
+                    The A* algorithm is configured to avoid diagonal movements to simplify robot navigation. The resulting path is sampled and transformed to robot-compatible waypoints through scaling and offset parameters:
+                </p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <div>
+                        \begin{align}
+                        x_{robot} &= x_{world} \times X_{SCALE} + X_{OFFSET} \\
+                        z_{robot} &= z_{world} \times Z_{SCALE} + Z_{OFFSET}
+                        \end{align}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <img src="occu.png" alt="Path planning visualization" class="w-full rounded-lg">
+                    <p class="text-sm text-gray-600 mt-2">Occupancy grid with planned path visualization</p>
+                </div>
+            </div>
+        </section>
+
+<!-- Centered Container -->
+<div class="flex justify-center rounded-t-lg ">
+    <!-- Enhanced Balance Performance Video Player -->
+    <div class="relative shadow-lg w-[40rem]">
+      <!-- Overlay Text -->
+      <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-4 rounded-t-lg">
+        <h3 class="text-white text-lg font-semibold">Balance Performance</h3>
+        <p class="text-white text-sm">The robot maintains balance in realtime</p>
+      </div>
+      <video
+        controls
+        loop
+        class="w-full h-auto rounded-lg"
+        preload="auto"
+        style="background-color: black;"
+      >
+        <source src="balance.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+  
+
+                
+                <!-- Centered Container -->
+<div class="flex justify-center rounded-t-lg " style="margin-top: 8rem;">
+    <!-- Enhanced Balance Performance Video Player -->
+    <div class="relative shadow-lg w-[40rem]">
+      <!-- Overlay Text -->
+      <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-4 rounded-t-lg">
+        <h3 class="text-white text-lg font-semibold">Navigation Performance</h3>
+      </div>
+      <video
+        controls
+        loop
+        class="w-full h-auto rounded-lg"
+        preload="auto"
+        style="background-color: black;"
+      >
+        <source src="waypoint.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+            
+            <!-- Computational Requirements -->
+            <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h3 class="text-xl font-bold mb-3">Computational Requirements</h3>
+                <p class="mb-4">
+                    The computational demands of the system are significant, primarily due to the Depth Anything model inference. Below are the processing times for different system components on our test hardware (Intel i7-9700K CPU, NVIDIA RTX 2080 GPU).To handle
+                </p>
+                
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full text-sm text-left text-gray-800">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Component</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Image Acquisition</td>
+
+                            </tr>
+                            <tr class="bg-gray-50 border-b">
+                                <td class="px-6 py-4">Depth Estimation (GPU)</td>
+  
+                            </tr>
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">Point Cloud Generation</td>
+
+                            </tr>
+                            <tr class="bg-gray-50 border-b">
+                                <td class="px-6 py-4">Path Planning (A*)</td>
+
+                        </tbody>
+                    </table>
+                </div>
+            
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" class="mb-12 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Conclusion and Future Work</h2>
+            
+            <div class="prose max-w-none">
+                <p>
+                    We presented a novel system integrating monocular depth estimation with a self-balancing robot for autonomous navigation. Our results demonstrate that modern deep learning-based depth estimation can enable vision-based navigation with only a single camera, representing a cost-effective alternative to traditional sensor suites.
+                </p>
+                
+                <p class="mt-4">
+                    The combination of Kalman filtering for orientation estimation, PID control for balance stability, and A* path planning on depth-derived occupancy grids provides a comprehensive solution for autonomous robot navigation in indoor environments.
+                </p>
+                
+                <div class="mt-6">
+                    <h3 class="text-xl font-bold">Future Work:</h3>
+                    <ul class="list-disc list-inside mt-2">
+                        <li>Incorporating visual odometry for improved position estimation</li>
+                        <li>Implementing dynamic obstacle avoidance capabilities</li>
+                        <li>Optimization of depth estimation models for embedded deployment</li>
+                        <li>Addition of complementary sensors (e.g., ultrasonic) for improved safety</li>
+                        <li>Exploring reinforcement learning approaches for improved balance and navigation control</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+<footer class="bg-blue-900 text-white py-10">
+    <div class="container mx-auto px-6">
+      <div class="md:flex justify-between items-start">
+        
+        <!-- About Section -->
+        <div class="mb-6 md:mb-0">
+          <h3 class="text-xl font-bold mb-3">Created by Team B11</h3>
+          <p class="text-blue-200">Department of Artificial Intelligence & Engineering</p>
+          <p class="text-blue-200">Amrita Vishwa Vidyapeetham, Coimbatore</p>
+          <p class="mt-2 text-blue-300">
+            <a href="mailto:cb.sc.u4aie23104@cb.students.amrita.edu" class="hover:underline">
+              cb.sc.u4aie23104@cb.students.amrita.edu
+            </a>
+          </p>
+        </div>
+  
+        <!-- Quick Links -->
+        <div>
+          <h3 class="text-xl font-bold mb-3"></h3>
+          <ul class="space-y-2 text-blue-300">
+            <li><a href="#abstract"  class="hover:underline">Home</a></li>
+            <li><a href="#abstract"  class="hover:underline">Projects</a></li>
+            <li><a href="#abstract" class="hover:underline">Team</a></li>
+            <li><a href="#abstract" class="hover:underline">Contact</a></li>
+          </ul>
+        </div>
+  
+      </div>
+  
+      <!-- Bottom Note -->
+      <div class="mt-10 border-t border-blue-800 pt-6 text-center text-sm text-blue-400">
+        <p>&copy; Team B11 - Department of AI, Amrita Vishwa Vidyapeetham.</p>
+      </div>
+    </div>
+  </footer>
+  
+</body>
+</html>
